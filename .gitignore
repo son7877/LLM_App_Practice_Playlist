@@ -9,6 +9,9 @@
 xcuserdata/
 *.xcuserstate
 .DS_Store
+.pbxproj
+.xcworkspacedata
+.plist
 
 # Sweetpad
 buildServer.json
