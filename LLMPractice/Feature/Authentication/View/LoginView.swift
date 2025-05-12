@@ -13,10 +13,10 @@ struct LoginView: View {
     @FocusState private var isFocused: Bool
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             VStack(spacing: 20) {
                 // 로고 또는 앱 이름
-                Text("LLMPractice")
+                Text("LLMPlayList")
                     .font(.largeTitle)
                     .fontWeight(.bold)
                     .padding(.bottom, 50)
@@ -37,7 +37,9 @@ struct LoginView: View {
                     .focused($isFocused)
                 
                 // 로그인 버튼
-                Button(action: { viewModel.handleLogin() }) {
+                Button(action: { 
+                    viewModel.handleLogin()
+                }) {
                     Text("로그인")
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
@@ -90,13 +92,12 @@ struct LoginView: View {
                     }
                     
                     // 구글 로그인
-                    Button(action: { viewModel.handleGoogleLogin() }) {
-                        Image(systemName: "g.circle.fill")
-                            .font(.title2)
-                            .foregroundColor(.white)
+                    Button(action: { 
+                        viewModel.handleGoogleLogin()
+                        }) {
+                        Image("GoogleLogin")
+                            .resizable()
                             .frame(width: 50, height: 50)
-                            .background(Color.red)
-                            .clipShape(Circle())
                     }
                 }
                 
@@ -104,16 +105,25 @@ struct LoginView: View {
             }
             .padding()
             .ignoresSafeArea(.keyboard, edges: .bottom)
-            .onTapGesture {
-                isFocused = false
-            }
+            .background( // 키보드 외부 터치 시 키보드 내리기
+                Color.clear
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        self.endTextEditing()
+                    }
+            )
             .alert("알림", isPresented: $viewModel.showAlert) {
-                Button("확인", role: .cancel) { }
+                Button("확인", role: .cancel) {
+                    viewModel.handleAlertDismiss()
+                }
             } message: {
                 Text(viewModel.alertMessage)
             }
             .sheet(isPresented: $viewModel.isShowingSignUp) {
                 SignUpView()
+            }
+            .navigationDestination(isPresented: $viewModel.isShowingPlayList) {
+                PlayListView()
             }
         }
     }

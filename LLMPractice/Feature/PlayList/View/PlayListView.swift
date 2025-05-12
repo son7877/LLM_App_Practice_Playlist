@@ -10,6 +10,7 @@ import SwiftUI
 struct PlayListView: View {
     var body: some View {
         Text("PlayList")
+            .navigationBarBackButtonHidden(true)
     }
 }
 

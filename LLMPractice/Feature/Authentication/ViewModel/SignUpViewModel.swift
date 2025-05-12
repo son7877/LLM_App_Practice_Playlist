@@ -15,14 +15,14 @@ class SignUpViewModel: ObservableObject {
     @Published var showAlert: Bool = false
     @Published var alertMessage: String = ""
     
-    // 이메일 유효성 검사
+    // 이메일 유효성 검사 - 구글링
     private func isValidEmail(_ email: String) -> Bool {
         let emailRegEx: String = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,64}"
         let emailPred: NSPredicate = NSPredicate(format:"SELF MATCHES %@", emailRegEx)
         return emailPred.evaluate(with: email)
     }
     
-    // 비밀번호 유효성 검사
+    // 비밀번호 유효성 검사 - 구글링
     private func isValidPassword(_ password: String) -> Bool {
         // 최소 8자, 최소 하나의 문자, 하나의 숫자, 하나의 특수문자
         let passwordRegEx: String = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]{8,}$"

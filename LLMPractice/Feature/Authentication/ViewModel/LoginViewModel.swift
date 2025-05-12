@@ -15,6 +15,7 @@ class LoginViewModel: ObservableObject {
     @Published var alertMessage: String = ""
     @Published var isShowingSignUp: Bool = false
     @Published var isShowingPlayList: Bool = false
+    @Published var isLoginSuccess: Bool = false
     
     func handleLogin() {
         // 입력값 검증
@@ -33,8 +34,17 @@ class LoginViewModel: ObservableObject {
         // TODO: 실제 로그인 로직 구현
         // 여기에 API 호출 등의 로그인 처리 로직을 추가
         
-        // 임시 로그인 성공 처리 후 플레이리스트 화면으로 이동
-        isShowingPlayList = true
+        // 임시 로그인 성공 처리
+        isLoginSuccess = true
+        alertMessage = "로그인 성공"
+        showAlert = true
+    }
+    
+    func handleAlertDismiss() {
+        if isLoginSuccess {
+            isShowingPlayList = true
+            isLoginSuccess = false
+        }
     }
     
     func handleKakaoLogin() {

@@ -10,6 +10,7 @@ import SwiftData
 
 @Model
 final class User {
+    
     var id: UUID
     var email: String
     var password: String
