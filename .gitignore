@@ -12,7 +12,7 @@ xcuserdata/
 .pbxproj
 .xcworkspacedata
 *.plist
-!**/Info.plist
+Info.plist
 
 # Sweetpad
 buildServer.json
