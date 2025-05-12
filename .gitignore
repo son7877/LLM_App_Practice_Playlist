@@ -11,7 +11,8 @@ xcuserdata/
 .DS_Store
 .pbxproj
 .xcworkspacedata
-.plist
+*.plist
+!**/Info.plist
 
 # Sweetpad
 buildServer.json
