@@ -10,7 +10,7 @@ import SwiftData
 
 @Model
 final class PlayList: Identifiable {
-    var id: UUID
+    private(set) var id: UUID = UUID()
     var title: String
     var songs: [Song]
     var createdAt: Date
@@ -19,15 +19,13 @@ final class PlayList: Identifiable {
     var isDeleted: Bool
 
     init(
-        id: UUID = UUID(), 
-        title: String, 
+        title: String,
         songs: [Song] = [], 
         createdAt: Date = Date(), 
         updatedAt: Date = Date(), 
         isPublic: Bool = true, 
         isDeleted: Bool = false
     ) {
-        self.id = id
         self.title = title
         self.songs = songs
         self.createdAt = createdAt

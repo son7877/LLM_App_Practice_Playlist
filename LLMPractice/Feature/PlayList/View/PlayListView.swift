@@ -58,6 +58,7 @@ struct PlayListView: View {
                                             .frame(width: 40, height: 40)
                                             .background(Color.gray.opacity(0.2))
                                             .cornerRadius(8)
+                                            .padding(.trailing, 10)
                                         
                                         VStack(alignment: .leading) {
                                             Text(playlist.title)
@@ -113,6 +114,7 @@ struct PlayListView: View {
                     }
                 }
             }
+            // 네비게이션 타이틀 및 버튼 설정
             .navigationTitle("나의 플레이리스트")
             .navigationBarBackButtonHidden(true)
             .toolbar {
@@ -129,7 +131,8 @@ struct PlayListView: View {
                     Form {
                         TextField("플레이리스트 제목", text: $newPlayListTitle)
                     }
-                    .navigationTitle("새 플레이리스트")
+                    .navigationTitle("새 플레이리스트 생성")
+                    .navigationBarTitleDisplayMode(.inline)
                     .navigationBarItems(
                         leading: Button("취소") {
                             showingCreatePlayList = false
@@ -147,10 +150,12 @@ struct PlayListView: View {
             }
             .sheet(isPresented: $showingChat) {
                 // TODO: LLM Chat 뷰 구현
+                // ChatView()
                 Text("LLM Chat")
             }
             .sheet(isPresented: $showingShare) {
                 // TODO: 공유 기능 구현
+                // ShareView()
                 Text("플레이리스트 공유")
             }
         }

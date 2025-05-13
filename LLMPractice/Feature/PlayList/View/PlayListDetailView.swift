@@ -53,6 +53,7 @@ struct PlayListDetailView: View {
             }
         }
         .navigationTitle(playlist.title)
+
     }
     
     private func formatDuration(_ duration: TimeInterval) -> String {

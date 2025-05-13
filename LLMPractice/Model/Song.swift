@@ -10,7 +10,7 @@ import SwiftData
 
 @Model
 final class Song: Identifiable {
-    let id: UUID
+    private(set) var id: UUID = UUID()
     var title: String
     var artist: String
     var albumArt: String?
@@ -19,7 +19,6 @@ final class Song: Identifiable {
     var updatedAt: Date
     
     init(
-        id: UUID = UUID(),
         title: String,
         artist: String,
         albumArt: String? = nil,
@@ -27,7 +26,6 @@ final class Song: Identifiable {
         createdAt: Date = Date(),
         updatedAt: Date = Date()
     ) {
-        self.id = id
         self.title = title
         self.artist = artist
         self.albumArt = albumArt

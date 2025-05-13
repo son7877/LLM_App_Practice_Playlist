@@ -10,21 +10,18 @@ import SwiftData
 
 @Model
 final class User {
-    
-    var id: UUID
+    private(set) var id: UUID = UUID()
     var email: String
     var password: String
     var createdAt: Date
     var updatedAt: Date
 
     init(
-        id: UUID = UUID(),
         email: String,
         password: String,
         createdAt: Date = Date(),
         updatedAt: Date = Date()
     ) {
-        self.id = id
         self.email = email
         self.password = password
         self.createdAt = createdAt
