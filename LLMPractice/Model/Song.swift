@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftData
+import MusicKit
 
 @Model
 final class Song: Identifiable {
@@ -17,12 +18,14 @@ final class Song: Identifiable {
     var duration: TimeInterval
     var createdAt: Date
     var updatedAt: Date
+    var musicKitID: String?  // MusicKit의 노래 ID를 저장
     
     init(
         title: String,
         artist: String,
         albumArt: String? = nil,
         duration: TimeInterval,
+        musicKitID: String? = nil,
         createdAt: Date = Date(),
         updatedAt: Date = Date()
     ) {
@@ -30,7 +33,21 @@ final class Song: Identifiable {
         self.artist = artist
         self.albumArt = albumArt
         self.duration = duration
+        self.musicKitID = musicKitID
         self.createdAt = createdAt
         self.updatedAt = updatedAt
+    }
+}
+
+// MusicKit의 Song을 우리 앱의 Song 모델로 변환하는 확장
+extension Song {
+    static func from(musicKitSong: MusicKit.Song) -> Song {
+        return Song(
+            title: musicKitSong.title,
+            artist: musicKitSong.artistName,
+            albumArt: musicKitSong.artwork?.url(width: 300, height: 300)?.absoluteString,
+            duration: musicKitSong.duration ?? 0,
+            musicKitID: musicKitSong.id.rawValue
+        )
     }
 } 
