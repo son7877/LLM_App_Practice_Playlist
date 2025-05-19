@@ -39,7 +39,7 @@ final class Song: Identifiable {
     }
 }
 
-// MusicKit의 Song을 우리 앱의 Song 모델로 변환하는 확장
+// MusicKit의 Song을 해당 앱의 Song 모델로 변환하는 확장
 extension Song {
     static func from(musicKitSong: MusicKit.Song) -> Song {
         return Song(
@@ -47,7 +47,7 @@ extension Song {
             artist: musicKitSong.artistName,
             albumArt: musicKitSong.artwork?.url(width: 300, height: 300)?.absoluteString,
             duration: musicKitSong.duration ?? 0,
-            musicKitID: musicKitSong.id.rawValue
+            musicKitID: musicKitSong.id.rawValue 
         )
     }
 } 
