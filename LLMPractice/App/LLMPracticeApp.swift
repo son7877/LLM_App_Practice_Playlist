@@ -13,6 +13,10 @@ struct LLMPracticeApp: App {
     var sharedModelContainer: ModelContainer = { 
         let schema: Schema = Schema([ // 데이터베이스에 저장될 모델들 정의
             User.self,
+            PlayList.self,
+            Song.self,
+            RequestMessage.self,
+            ResponseMessage.self
         ])
 
         // 데이터를 기기에 저장할지 아닐지 결정

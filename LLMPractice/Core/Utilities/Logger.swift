@@ -38,10 +38,6 @@ final class Logger {
         case .critical:
             os_log(.fault, log: logger, "%{public}@", logMessage)
         }
-        
-        #if DEBUG
-        print(logMessage)
-        #endif
     }
     
     // 편의 메서드들

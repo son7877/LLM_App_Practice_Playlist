@@ -6,8 +6,10 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct PlayListView: View {
+    @Environment(\.modelContext) private var modelContext
     @StateObject private var viewModel = PlayListViewModel()
     @State private var showingCreatePlayList = false
     @State private var newPlayListTitle = ""
@@ -149,9 +151,9 @@ struct PlayListView: View {
                 .presentationDetents([.height(200)])
             }
             .sheet(isPresented: $showingChat) {
-                // TODO: LLM Chat 뷰 구현
-                // ChatView()
-                Text("LLM Chat")
+                NavigationStack {
+                    LLMChatView(viewModel: LLMChatViewModel(modelContext: modelContext))
+                }
             }
             .sheet(isPresented: $showingShare) {
                 // TODO: 공유 기능 구현

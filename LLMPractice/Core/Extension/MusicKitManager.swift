@@ -13,6 +13,7 @@ class MusicKitManager {
     static let shared = MusicKitManager()
     private init() {}
 
+    // MARK: - 음악 검색
     func fetchMusic(_ txt: String) async throws -> [Song] {
         let status = await MusicAuthorization.request() // 음악 권한 요청
 
@@ -21,16 +22,15 @@ class MusicKitManager {
                 do {
                     var request = MusicCatalogSearchRequest(term: txt, types: [MusicKit.Song.self])
                     request.limit = 10 // 검색 결과 10개
-                    request.offset = 1 // 검색 결과 1번째 결과부터 가져옴
+                    request.offset = 0 // 검색 결과 0번째 결과부터 가져옴
 
                     let result = try await request.response() // 검색 결과 가져옴
                     
-                    // MusicKit의 Song을 우리 앱의 Song 모델로 변환
+                    // MusicKit의 Song을 앱의 Song 모델로 변환
                     let songs = result.songs.map { musicKitSong in
                         Song.from(musicKitSong: musicKitSong)
                     }
-                    
-                    Logger.shared.info("음악 검색 완료: \(songs.count)개의 결과")
+            
                     return songs
                 } catch {
                     Logger.shared.error("음악 검색 중 오류 발생: \(error.localizedDescription)")

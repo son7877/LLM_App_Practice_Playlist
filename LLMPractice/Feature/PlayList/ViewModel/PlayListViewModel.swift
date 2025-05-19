@@ -27,9 +27,9 @@ class PlayListViewModel: ObservableObject {
         Task {
             try? await Task.sleep(nanoseconds: 1_000_000_000) // 1초 대기
             playList = [
-                PlayList(title: "운동할 때 듣기 좋은 노래"),
-                PlayList(title: "잠잘 때 듣기 좋은 노래"),
-                PlayList(title: "드라이브할 때 듣기 좋은 노래")
+                // PlayList(title: "운동할 때 듣기 좋은 노래"),
+                // PlayList(title: "잠잘 때 듣기 좋은 노래"),
+                // PlayList(title: "드라이브할 때 듣기 좋은 노래")
             ]
             isLoading = false
         }
