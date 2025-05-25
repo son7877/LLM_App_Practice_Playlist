@@ -21,7 +21,7 @@ struct LLMPracticeApp: App {
 
         // 데이터를 기기에 저장할지 아닐지 결정
         // isStoredInMemoryOnly: false -> 앱이 종료되어도 기기에 저장, true -> 앱이 종료되면 데이터 삭제
-        let modelConfiguration: ModelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false) 
+        let modelConfiguration: ModelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true) 
 
         do { // 에러 처리
             return try ModelContainer(for: schema, configurations: [modelConfiguration])
@@ -32,7 +32,7 @@ struct LLMPracticeApp: App {
 
     var body: some Scene {
         WindowGroup {
-            LoginView()
+            PlayListView()
         }
         .modelContainer(sharedModelContainer)
     }

@@ -19,13 +19,12 @@ struct LLMChatView: View {
             // 채팅 메시지 목록 뷰
             ChatMessagesView(requestMessages: requestMessages, isLoading: viewModel.isLoading)
             
-            // 추천된 곡 목록
+            // 추천된 곡 목록 (음악 관련 질문일 때만 표시)
             if !viewModel.recommendedSongs.isEmpty {
                 VStack(alignment: .leading) {
                     Text("추천된 곡")
                         .font(.headline)
                         .padding(.horizontal)
-                    
                     ScrollView(.horizontal, showsIndicators: false) {
                         LazyHStack(spacing: 12) {
                             ForEach(viewModel.recommendedSongs) { song in
@@ -34,6 +33,25 @@ struct LLMChatView: View {
                         }
                         .padding(.horizontal)
                     }
+                }
+            } else if viewModel.isLoading {
+                // 로딩 중일 때 표시
+                VStack(alignment: .leading) {
+                    Text("추천된 곡")
+                        .font(.headline)
+                        .padding(.horizontal)
+                    HStack {
+                        ProgressView()
+                            .padding(.leading)
+                        Text("추천 곡을 불러오는 중...")
+                            .foregroundColor(.gray)
+                        Spacer()
+                    }
+                    .padding(.horizontal)
+                    .padding(.vertical, 16)
+                    .background(Color.gray.opacity(0.1))
+                    .cornerRadius(12)
+                    .padding(.horizontal)
                 }
             }
             
@@ -103,18 +121,18 @@ struct ChatMessagesView: View {
         ScrollView {
             LazyVStack(spacing: 12) {
                 ForEach(requestMessages) { request in
-                    if let response = request.response {
-                        VStack(spacing: 8) {
-                            // 사용자 메시지
-                            HStack {
-                                Spacer()
-                                Text(request.content)
-                                    .padding()
-                                    .background(Color.blue)
-                                    .foregroundColor(.white)
-                                    .cornerRadius(16)
-                            }
-                            // 봇 응답
+                    VStack(spacing: 8) {
+                        // 사용자 메시지
+                        HStack {
+                            Spacer()
+                            Text(request.content)
+                                .padding()
+                                .background(Color.blue)
+                                .foregroundColor(.white)
+                                .cornerRadius(16)
+                        }
+                        // 봇 응답
+                        if let response = request.response {
                             HStack {
                                 Text(response.content)
                                     .padding()
@@ -122,22 +140,21 @@ struct ChatMessagesView: View {
                                     .cornerRadius(16)
                                 Spacer()
                             }
+                        } else if isLoading && request == requestMessages.last {
+                            // 답변이 아직 없는 마지막 메시지에만 로딩 말풍선 표시
+                            HStack {
+                                HStack(spacing: 8) {
+                                    ProgressView()
+                                    Text("응답 생성 중...")
+                                        .foregroundColor(.gray)
+                                }
+                                .padding()
+                                .background(Color.gray.opacity(0.2))
+                                .cornerRadius(16)
+                                Spacer()
+                            }
                         }
-                        
                     }
-                }
-                // 로딩 중일 때 표시
-                if isLoading {
-                    HStack {
-                        ProgressView()
-                            .padding(.trailing, 8)
-                        Text("응답 생성 중...")
-                            .foregroundColor(.gray)
-                        Spacer()
-                    }
-                    .padding()
-                    .background(Color.gray.opacity(0.1))
-                    .cornerRadius(16)
                 }
             }
             .padding()
@@ -145,7 +162,3 @@ struct ChatMessagesView: View {
         .scrollDismissesKeyboard(.immediately)
     }
 }
-
-// struct SendMessageView: View {
-    
-// }
