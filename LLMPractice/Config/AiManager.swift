@@ -42,7 +42,7 @@ final class AiManager {
         
         let apiKey = Bundle.main.openAiAPIKey
         let urlString = "https://" + Bundle.main.openAiURL!
-        Logger.shared.debug("API Key: \(apiKey ?? "API Key 없음")")
+        Logger.shared.debug("API Key: \(apiKey?.suffix(4).map { "****\($0)" } ?? "API Key 없음")") // 뒷자리 4자리만 로그 출력
         Logger.shared.debug("URL: \(urlString)")
         
         guard let url = URL(string: urlString) else {
