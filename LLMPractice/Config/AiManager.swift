@@ -97,6 +97,20 @@ final class AiManager {
             Logger.shared.debug("API Response: \(jsonString)")
         }
         
+        // HTTP 상태 코드 확인
+        guard let httpResponse = response as? HTTPURLResponse else {
+            Logger.shared.error("Invalid response received from the server.")
+            return "서버 응답 오류"
+        }
+
+        guard (200...299).contains(httpResponse.statusCode) else {
+            Logger.shared.error("HTTP Error: \(httpResponse.statusCode)")
+            if let errorMessage = String(data: data, encoding: .utf8) {
+                Logger.shared.error("Error Response Body: \(errorMessage)")
+            }
+            return "API 호출 실패: HTTP \(httpResponse.statusCode)"
+        }
+        
         let result = try JSONDecoder().decode(OpenAIResponse.self, from: data)
         return result.choices.first?.message.content ?? "추천 결과가 없습니다."
     }
