@@ -30,8 +30,9 @@ final class AiManager {
         
         음악 추천을 할 때는 다음과 같은 형식으로 답변해주세요:
         1. 먼저 사용자의 취향이나 상황에 맞는 공감대를 형성해주세요.
-        2. 그 다음 '추천 곡: [곡명1], [곡명2], [곡명3]' 형식으로 곡을 추천해주세요.
-        3. 마지막으로 추천한 곡들에 대한 간단한 설명이나 특징을 덧붙여주세요.
+        2. 이전 대화에서 언급된 사용자의 취향이나 선호도를 참고하여 추천해주세요.
+        3. 그 다음 '추천 곡: [곡명1], [곡명2], [곡명3]' 형식으로 곡을 추천해주세요.
+        4. 마지막으로 추천한 곡들에 대한 간단한 설명이나 특징을 덧붙여주세요.
         
         예시 답변:
         "비 오는 날이면 이런 감성적인 곡들이 좋죠! 
@@ -41,7 +42,7 @@ final class AiManager {
         
         let apiKey = Bundle.main.openAiAPIKey
         let urlString = "https://" + Bundle.main.openAiURL!
-        Logger.shared.debug("API Key: \(apiKey ?? "API Key 없음")")
+        Logger.shared.debug("API Key: \(apiKey?.suffix(4).map { "****\($0)" } ?? "API Key 없음")") // 뒷자리 4자리만 로그 출력
         Logger.shared.debug("URL: \(urlString)")
         
         guard let url = URL(string: urlString) else {
@@ -49,14 +50,28 @@ final class AiManager {
             return "OpenAI URL 오류"
         }
 
-        let messages: [[String: String]] = [
-            ["role": "system", "content": systemPrompt],
-            ["role": "user", "content": userInput]
+        // 이전 대화 내용을 포함한 메시지 구성
+        var messages: [[String: String]] = [
+            ["role": "system", "content": systemPrompt]
         ]
+        
+        // 이전 대화 내용 추가 (최근 3개 대화만)
+        if let previousMessages = try? await fetchPreviousMessages(limit: 3) {
+            for message in previousMessages {
+                messages.append(["role": "user", "content": message.content])
+                if let response = message.response {
+                    messages.append(["role": "assistant", "content": response.content])
+                }
+            }
+        }
+        
+        // 현재 사용자 입력 추가
+        messages.append(["role": "user", "content": userInput])
+        
         let body: [String: Any] = [
             "model": "gpt-4o-mini",
             "messages": messages,
-            "max_tokens": 100
+            "max_tokens": 500
         ]
         
         // 3. OpenAI API 호출
@@ -80,6 +95,20 @@ final class AiManager {
         // 응답 데이터 디버깅
         if let jsonString = String(data: data, encoding: .utf8) {
             Logger.shared.debug("API Response: \(jsonString)")
+        }
+        
+        // HTTP 상태 코드 확인
+        guard let httpResponse = response as? HTTPURLResponse else {
+            Logger.shared.error("Invalid response received from the server.")
+            return "서버 응답 오류"
+        }
+
+        guard (200...299).contains(httpResponse.statusCode) else {
+            Logger.shared.error("HTTP Error: \(httpResponse.statusCode)")
+            if let errorMessage = String(data: data, encoding: .utf8) {
+                Logger.shared.error("Error Response Body: \(errorMessage)")
+            }
+            return "API 호출 실패: HTTP \(httpResponse.statusCode)"
         }
         
         let result = try JSONDecoder().decode(OpenAIResponse.self, from: data)

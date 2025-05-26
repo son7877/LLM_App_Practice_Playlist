@@ -42,7 +42,14 @@ final class LLMChatViewModel: ObservableObject {
         let responseMessage = ResponseMessage(content: response, request: requestMessage)
         requestMessage.response = responseMessage
         modelContext.insert(responseMessage)
-        do { try modelContext.save() } catch {}
+        do { 
+            try modelContext.save() 
+        } catch {
+            // errorMessage가 nil일 때만 할당하여 Alert가 여러 번 뜨지 않도록 함
+            if errorMessage == nil {
+                errorMessage = ErrorMessage("데이터 저장 중 에러 발생: \(error.localizedDescription)")
+            }
+        }
 
         // 음악 관련 질문인 경우에만 추천 곡 검색
         if isMusicRelatedQuestion(response) {
@@ -61,8 +68,16 @@ final class LLMChatViewModel: ObservableObject {
     
     // MARK: - 추천 곡 검색
     private func searchRecommendedSongs(from text: String) async {
-        let songTitles = text.components(separatedBy: ", ")
-            .map { $0.replacingOccurrences(of: "추천 곡: ", with: "") }
+        // "추천 곡:" 이후의 텍스트를 추출
+        guard let songPart = text.components(separatedBy: "추천 곡:").last else { return }
+        
+        // 대괄호를 제거하고 쉼표로 구분된 곡명들을 추출
+        let songTitles = songPart
+            .replacingOccurrences(of: "[", with: "")
+            .replacingOccurrences(of: "]", with: "")
+            .components(separatedBy: ",")
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
         
         for title in songTitles {
             do {
