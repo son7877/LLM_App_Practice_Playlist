@@ -10,32 +10,28 @@ import SwiftData
 
 @main
 struct LLMPracticeApp: App {
-    var sharedModelContainer: ModelContainer = { 
-        let schema: Schema = Schema([ // 데이터베이스에 저장될 모델들 정의
+    let modelContainer: ModelContainer
+
+    init() {
+        let schema: Schema = Schema([
             User.self,
             PlayList.self,
             Song.self,
             RequestMessage.self,
             ResponseMessage.self
         ])
-
-        // 데이터를 기기에 저장할지 아닐지 결정
-        // isStoredInMemoryOnly: false -> 앱이 종료되어도 기기에 저장, true -> 앱이 종료되면 데이터 삭제
-        let modelConfiguration: ModelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true) 
-
-        do { // 에러 처리
-            let container = try ModelContainer(for: schema, configurations: [modelConfiguration])
-            AiManager.configure(with: container.mainContext)
-            return container
+        let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
+        do {
+            modelContainer = try ModelContainer(for: schema, configurations: [config])
         } catch {
             fatalError("Could not create ModelContainer: \(error)")
         }
-    }()
+    }
 
     var body: some Scene {
         WindowGroup {
-            PlayListView()
+            LoginView()
         }
-        .modelContainer(sharedModelContainer)
+        .environment(\.modelContext, modelContainer.mainContext)
     }
 }

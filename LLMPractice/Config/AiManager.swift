@@ -6,50 +6,50 @@
 //
 
 import Foundation
+import SwiftData
 
 final class AiManager {
     static let shared = AiManager()
-    private init() {}
-
+    private(set) static var modelContext: ModelContext?
+    
+    static func configure(with modelContext: ModelContext) {
+        self.modelContext = modelContext
+    }
+    
     // OpenAI API 호출
-    func fetchMusicRecommendation(userInput: String) async throws -> String {
-        // 2초 딜레이 추가
-        try await Task.sleep(nanoseconds: 2_000_000_000) // 2초
-
+    func fetchMusicRecommendation(userInput: String) async throws -> String {        
         // 1. 로컬 키워드 필터링
         if !KeywordManager.shared.isMusicRelatedQuestion(userInput) {
             return KeywordManager.shared.guidanceMessage
         }
-
+        
         // 2. OpenAI 프롬프트
         let systemPrompt = """
-        당신은 친근하고 음악에 열정적인 음악 추천 챗봇입니다. 
-        사용자와 대화할 때는 친구처럼 자연스럽게 대화하되, 음악에 대한 전문적인 지식도 함께 전달해주세요.
-        
-        음악과 관련 없는 질문에는 '음악 추천만 도와드릴 수 있어요. 어떤 음악을 찾고 계신가요?'라고 답변해주세요.
-        
-        음악 추천을 할 때는 다음과 같은 형식으로 답변해주세요:
-        1. 먼저 사용자의 취향이나 상황에 맞는 공감대를 형성해주세요.
-        2. 이전 대화에서 언급된 사용자의 취향이나 선호도를 참고하여 추천해주세요.
-        3. 그 다음 '추천 곡: [곡명1], [곡명2], [곡명3]' 형식으로 곡을 추천해주세요.
-        4. 마지막으로 추천한 곡들에 대한 간단한 설명이나 특징을 덧붙여주세요.
-        
-        예시 답변:
-        "비 오는 날이면 이런 감성적인 곡들이 좋죠! 
-        추천 곡: Rain, November Rain, Purple Rain
-        이 곡들은 비라는 소재를 다루면서도 각각 다른 감정을 담고 있어요. 특히 Purple Rain은 프린스의 명곡으로, 비를 통해 정화와 치유를 표현한 곡이에요."
+        당신은 Apple Music 데이터베이스에 등록된 곡만 추천하는 음악 챗봇입니다.
+        반드시 Apple Music(또는 MusicKit)에서 실제로 검색 가능한 **정확한 곡명과 아티스트명**을 사용해서 추천해주세요.
+        곡명과 아티스트명은 공식 표기(영문, 대소문자, 특수문자 포함)를 그대로 사용해야 하며, 오타나 임의의 변형 없이 작성해야 합니다.
+
+        반드시 아래 형식을 지켜서 답변하세요:
+        추천 곡: 곡명1 (아티스트1), 곡명2 (아티스트2), 곡명3 (아티스트3)
+
+        예시:
+        추천 곡: Pink Venom (BLACKPINK), Seven (Jung Kook feat. Latto), Maniac (Stray Kids)
+
+        각 곡에 대한 간단한 설명도 덧붙여주세요.
+
+        음악과 전혀 무관한 질문(예: 수학 문제, 날씨 등)에만 '음악 추천만 도와드릴 수 있어요. 어떤 음악을 찾고 계신가요?'라고 답변해주세요.
         """
         
         let apiKey = Bundle.main.openAiAPIKey
         let urlString = "https://" + Bundle.main.openAiURL!
-        Logger.shared.debug("API Key: \(apiKey?.suffix(4).map { "****\($0)" } ?? "API Key 없음")") // 뒷자리 4자리만 로그 출력
+        Logger.shared.debug("API Key: \(apiKey.map { "****" + String($0.suffix(4)) } ?? "API Key 없음")")
         Logger.shared.debug("URL: \(urlString)")
         
         guard let url = URL(string: urlString) else {
             Logger.shared.error("잘못된 URL 형식: \(urlString)")
             return "OpenAI URL 오류"
         }
-
+        
         // 이전 대화 내용을 포함한 메시지 구성
         var messages: [[String: String]] = [
             ["role": "system", "content": systemPrompt]
@@ -69,7 +69,7 @@ final class AiManager {
         messages.append(["role": "user", "content": userInput])
         
         let body: [String: Any] = [
-            "model": "gpt-4o-mini",
+            "model": "gpt-4o",
             "messages": messages,
             "max_tokens": 500
         ]
@@ -89,7 +89,7 @@ final class AiManager {
         
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = try JSONSerialization.data(withJSONObject: body)
-
+        
         let (data, response) = try await URLSession.shared.data(for: request)
         
         // 응답 데이터 디버깅
@@ -102,7 +102,7 @@ final class AiManager {
             Logger.shared.error("Invalid response received from the server.")
             return "서버 응답 오류"
         }
-
+        
         guard (200...299).contains(httpResponse.statusCode) else {
             Logger.shared.error("HTTP Error: \(httpResponse.statusCode)")
             if let errorMessage = String(data: data, encoding: .utf8) {
@@ -113,5 +113,13 @@ final class AiManager {
         
         let result = try JSONDecoder().decode(OpenAIResponse.self, from: data)
         return result.choices.first?.message.content ?? "추천 결과가 없습니다."
+    }
+    
+    private func fetchPreviousMessages(limit: Int) async throws -> [RequestMessage] {
+        guard let modelContext = AiManager.modelContext else { return [] }
+        // 최근 3개 대화만 조회
+        // 임시로 빈 배열 반환
+        // 추후 데이터베이스 조회 로직 추가 -> 최근 메시지 limit 개수만큼 조회
+        return []
     }
 }

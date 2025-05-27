@@ -11,6 +11,7 @@ import SwiftData
 struct LoginView: View {
     @StateObject private var viewModel = LoginViewModel()
     @FocusState private var isFocused: Bool
+    @Environment(\.modelContext) private var modelContext
     
     var body: some View {
         NavigationStack {
@@ -123,12 +124,9 @@ struct LoginView: View {
                 SignUpView()
             }
             .navigationDestination(isPresented: $viewModel.isShowingPlayList) {
-                PlayListView()
+                PlayListView(modelContext: modelContext)
             }
         }
+    
     }
-}
-
-#Preview {
-    LoginView()
 }

@@ -62,15 +62,3 @@ struct PlayListDetailView: View {
         return String(format: "%d:%02d", minutes, seconds)
     }
 }
-
-#Preview {
-    NavigationStack {
-        PlayListDetailView(playlist: PlayList(
-            title: "샘플 플레이리스트",
-            songs: [
-                Song(title: "샘플 노래 1", artist: "아티스트 1", duration: 180),
-                Song(title: "샘플 노래 2", artist: "아티스트 2", duration: 240)
-            ]
-        ))
-    }
-} 

@@ -7,45 +7,48 @@
 
 import Foundation
 import SwiftUI
+import SwiftData
 
 @MainActor
 class PlayListViewModel: ObservableObject {
-    @Published var playList: [PlayList] = []
+    @Published var playLists: [PlayList] = []
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
     @Published var showError: Bool = false
     
-    init() {
+    private let modelContext: ModelContext
+    
+    init(modelContext: ModelContext) {
+        self.modelContext = modelContext
         loadPlayLists()
     }
     
     func loadPlayLists() {
         isLoading = true
-        
-        // TODO: API 호출로 실제 플레이리스트 데이터 가져오기
-        // 임시 데이터로 테스트
         Task {
-            try? await Task.sleep(nanoseconds: 1_000_000_000) // 1초 대기
-            playList = [
-                // PlayList(title: "운동할 때 듣기 좋은 노래"),
-                // PlayList(title: "잠잘 때 듣기 좋은 노래"),
-                // PlayList(title: "드라이브할 때 듣기 좋은 노래")
-            ]
+            // SwiftData에서 PlayList 전체 불러오기
+            let descriptor = FetchDescriptor<PlayList>(sortBy: [SortDescriptor(\.createdAt)])
+            if let result = try? modelContext.fetch(descriptor) {
+                playLists = result
+            }
             isLoading = false
         }
     }
     
     func createPlayList(title: String) {
         let newPlayList = PlayList(title: title)
-        playList.append(newPlayList)
-        
-        // TODO: API 호출로 서버에 플레이리스트 생성 요청
+        modelContext.insert(newPlayList)
+        try? modelContext.save()
+        loadPlayLists() // 새로고침
     }
     
     func deletePlayList(at indexSet: IndexSet) {
-        playList.remove(atOffsets: indexSet)
-        
-        // TODO: API 호출로 서버에서 플레이리스트 삭제 요청
+        for index in indexSet {
+            let playlist = playLists[index]
+            modelContext.delete(playlist)
+        }
+        try? modelContext.save()
+        loadPlayLists() // 새로고침
     }
 }
 
