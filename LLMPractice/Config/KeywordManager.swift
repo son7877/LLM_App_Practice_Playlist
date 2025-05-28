@@ -31,7 +31,7 @@ final class KeywordManager {
     // MARK: - 키워드 매칭 점수 계산
     func calculateKeywordScore(_ input: String) -> Int {
         let words = input.components(separatedBy: .whitespacesAndNewlines)
-            .map { $0.lowercased() }
+            .map { $0.lowercased() } 
             .filter { !$0.isEmpty }
         
         var totalScore = 0

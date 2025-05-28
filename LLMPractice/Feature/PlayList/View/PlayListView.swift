@@ -9,12 +9,18 @@ import SwiftUI
 import SwiftData
 
 struct PlayListView: View {
-    @Environment(\.modelContext) private var modelContext
-    @StateObject private var viewModel = PlayListViewModel()
+    private let modelContext: ModelContext
+    @StateObject private var viewModel: PlayListViewModel
     @State private var showingCreatePlayList = false
     @State private var newPlayListTitle = ""
     @State private var showingChat = false
     @State private var showingShare = false
+
+    
+    init(modelContext: ModelContext) {
+        self.modelContext = modelContext
+        _viewModel = StateObject(wrappedValue: PlayListViewModel(modelContext: modelContext))
+    }
     
     var body: some View {
         NavigationStack {
@@ -23,7 +29,7 @@ struct PlayListView: View {
                     if viewModel.isLoading {
                         ProgressView()
                             .scaleEffect(1.5)
-                    } else if viewModel.playList.isEmpty {
+                    } else if viewModel.playLists.isEmpty {
                         // 플레이리스트가 없을 경우 표시할 뷰
                         VStack(spacing: 20) {
                             Spacer()
@@ -51,7 +57,7 @@ struct PlayListView: View {
                     } else {
                         // 플레이리스트 목록
                         List {
-                            ForEach(viewModel.playList) { playlist in
+                            ForEach(viewModel.playLists) { playlist in
                                 NavigationLink(destination: PlayListDetailView(playlist: playlist)) {
                                     HStack {
                                         // 플레이리스트 썸네일
@@ -150,7 +156,9 @@ struct PlayListView: View {
                 }
                 .presentationDetents([.height(200)])
             }
-            .sheet(isPresented: $showingChat) {
+            .sheet(isPresented: $showingChat, onDismiss: {
+                viewModel.loadPlayLists()
+            }) {
                 NavigationStack {
                     LLMChatView(viewModel: LLMChatViewModel(modelContext: modelContext))
                 }
@@ -162,10 +170,6 @@ struct PlayListView: View {
             }
         }
     }
-}
-
-#Preview {
-    PlayListView()
 }
 
 

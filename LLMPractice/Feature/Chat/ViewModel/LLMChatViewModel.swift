@@ -68,28 +68,39 @@ final class LLMChatViewModel: ObservableObject {
     
     // MARK: - 추천 곡 검색
     private func searchRecommendedSongs(from text: String) async {
-        // "추천 곡:" 이후의 텍스트를 추출
+        // "추천 곡:" 이후의 텍스트 추출
         guard let songPart = text.components(separatedBy: "추천 곡:").last else { return }
-        
-        // 대괄호를 제거하고 쉼표로 구분된 곡명들을 추출
-        let songTitles = songPart
-            .replacingOccurrences(of: "[", with: "")
-            .replacingOccurrences(of: "]", with: "")
+        let songItems = songPart
             .components(separatedBy: ",")
             .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
             .filter { !$0.isEmpty }
-        
-        for title in songTitles {
-            do {
-                let songs = try await MusicKitManager.shared.fetchMusic(title)
-                if let firstSong = songs.first {
-                    recommendedSongs.append(firstSong)
-                }
-            } catch {
-                // errorMessage가 nil일 때만 할당하여 Alert가 여러 번 뜨지 않도록 함
-                if errorMessage == nil {
-                    errorMessage = ErrorMessage("곡 검색 중 에러 발생: \(error.localizedDescription)")
-                }
+
+        for item in songItems {
+            // "곡명 (아티스트)" 형태에서 곡명과 아티스트 분리
+            let regex = try! NSRegularExpression(pattern: #"^(.+?)\s*\((.+?)\)$"#, options: [])
+            if let match = regex.firstMatch(in: item, range: NSRange(item.startIndex..., in: item)),
+               let titleRange = Range(match.range(at: 1), in: item),
+               let artistRange = Range(match.range(at: 2), in: item) {
+                let title = String(item[titleRange])
+                let artist = String(item[artistRange])
+                await fetchAndAppendSong(title: title, artist: artist)
+            } else {
+                // 괄호 없는 경우 곡명만 검색
+                await fetchAndAppendSong(title: item, artist: nil)
+            }
+        }
+    }
+    
+    private func fetchAndAppendSong(title: String, artist: String?) async {
+        do {
+            let query = artist != nil ? "\(title) \(artist!)" : title
+            let songs = try await MusicKitManager.shared.fetchMusic(query)
+            if let firstSong = songs.first {
+                recommendedSongs.append(firstSong)
+            }
+        } catch {
+            if errorMessage == nil {
+                errorMessage = ErrorMessage("곡 검색 중 에러 발생: \(error.localizedDescription)")
             }
         }
     }
