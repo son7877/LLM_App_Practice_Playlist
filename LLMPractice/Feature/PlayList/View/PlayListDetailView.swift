@@ -9,7 +9,7 @@ import SwiftUI
 
 struct PlayListDetailView: View {
     let playlist: PlayList
-    
+
     var body: some View {
         List {
             ForEach(playlist.songs) { song in
@@ -34,7 +34,7 @@ struct PlayListDetailView: View {
                             .background(Color.gray.opacity(0.2))
                             .cornerRadius(8)
                     }
-                    
+
                     VStack(alignment: .leading) {
                         Text(song.title)
                             .font(.headline)
@@ -42,9 +42,9 @@ struct PlayListDetailView: View {
                             .font(.subheadline)
                             .foregroundColor(.gray)
                     }
-                    
+
                     Spacer()
-                    
+
                     Text(formatDuration(song.duration))
                         .font(.subheadline)
                         .foregroundColor(.gray)
@@ -53,9 +53,8 @@ struct PlayListDetailView: View {
             }
         }
         .navigationTitle(playlist.title)
-
     }
-    
+
     private func formatDuration(_ duration: TimeInterval) -> String {
         let minutes = Int(duration) / 60
         let seconds = Int(duration) % 60
