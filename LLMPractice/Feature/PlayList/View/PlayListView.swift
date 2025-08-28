@@ -5,8 +5,11 @@
 //  Created by 안홍범 on 2025/05/12.
 //
 
-import SwiftUI
+import KakaoSDKCommon
+import KakaoSDKShare
+import KakaoSDKTemplate
 import SwiftData
+import SwiftUI
 
 struct PlayListView: View {
     private let modelContext: ModelContext
@@ -15,13 +18,15 @@ struct PlayListView: View {
     @State private var newPlayListTitle = ""
     @State private var showingChat = false
     @State private var showingShare = false
+    @State private var selectedPlaylistForShare: PlayList?
+    @State private var isSelectionMode = false
+    @State private var selectedPlaylists: Set<PlayList> = []
 
-    
     init(modelContext: ModelContext) {
         self.modelContext = modelContext
         _viewModel = StateObject(wrappedValue: PlayListViewModel(modelContext: modelContext))
     }
-    
+
     var body: some View {
         NavigationStack {
             ZStack {
@@ -33,15 +38,15 @@ struct PlayListView: View {
                         // 플레이리스트가 없을 경우 표시할 뷰
                         VStack(spacing: 20) {
                             Spacer()
-                            
+
                             Image(systemName: "music.note.list")
                                 .font(.system(size: 70))
                                 .foregroundColor(.gray)
-                            
+
                             Text("플레이리스트가 없습니다")
                                 .font(.title2)
                                 .foregroundColor(.gray)
-                            
+
                             Button(action: {
                                 showingCreatePlayList = true
                             }) {
@@ -51,32 +56,52 @@ struct PlayListView: View {
                                     .background(Color.blue)
                                     .cornerRadius(10)
                             }
-                            
+
                             Spacer()
                         }
                     } else {
-                        // 플레이리스트 목록
                         List {
                             ForEach(viewModel.playLists) { playlist in
-                                NavigationLink(destination: PlayListDetailView(playlist: playlist)) {
-                                    HStack {
-                                        // 플레이리스트 썸네일
-                                        Image(systemName: "music.note")
-                                            .font(.title)
-                                            .frame(width: 40, height: 40)
-                                            .background(Color.gray.opacity(0.2))
-                                            .cornerRadius(8)
-                                            .padding(.trailing, 10)
-                                        
-                                        VStack(alignment: .leading) {
-                                            Text(playlist.title)
-                                                .font(.headline)
-                                            Text("\(playlist.songs.count)곡")
-                                                .font(.subheadline)
-                                                .foregroundColor(.gray)
+                                HStack {
+                                    if isSelectionMode {
+                                        Image(
+                                            systemName: selectedPlaylists.contains(playlist)
+                                                ? "checkmark.circle.fill" : "circle"
+                                        )
+                                        .foregroundColor(
+                                            selectedPlaylists.contains(playlist) ? .blue : .gray
+                                        )
+                                        .onTapGesture {
+                                            if selectedPlaylists.contains(playlist) {
+                                                selectedPlaylists.remove(playlist)
+                                            } else {
+                                                selectedPlaylists.insert(playlist)
+                                            }
                                         }
                                     }
-                                    .padding(.vertical, 8)
+
+                                    NavigationLink(
+                                        destination: PlayListDetailView(playlist: playlist)
+                                    ) {
+                                        HStack {
+                                            Image(systemName: "music.note")
+                                                .font(.title)
+                                                .frame(width: 40, height: 40)
+                                                .background(Color.gray.opacity(0.2))
+                                                .cornerRadius(8)
+                                                .padding(.trailing, 10)
+
+                                            VStack(alignment: .leading) {
+                                                Text(playlist.title)
+                                                    .font(.headline)
+                                                Text("\(playlist.songs.count)곡")
+                                                    .font(.subheadline)
+                                                    .foregroundColor(.gray)
+                                            }
+                                        }
+                                        .padding(.vertical, 8)
+                                    }
+                                    .disabled(isSelectionMode)
                                 }
                             }
                             .onDelete { indexSet in
@@ -85,27 +110,39 @@ struct PlayListView: View {
                         }
                     }
                 }
-                
+
                 // 하단 버튼들
                 VStack {
                     Spacer()
                     HStack {
                         // 공유 버튼
                         Button(action: {
-                            showingShare = true
+                            if isSelectionMode {
+                                if let selectedPlaylist = selectedPlaylists.first {
+                                    selectedPlaylistForShare = selectedPlaylist
+                                    showingShare = true
+                                }
+                                isSelectionMode = false
+                                selectedPlaylists.removeAll()
+                            } else {
+                                isSelectionMode = true
+                            }
                         }) {
-                            Image(systemName: "square.and.arrow.up")
-                                .font(.title2)
-                                .foregroundColor(.white)
-                                .frame(width: 60, height: 60)
-                                .background(Color.green)
-                                .clipShape(Circle())
-                                .shadow(radius: 4)
+                            Image(
+                                systemName: isSelectionMode
+                                    ? "checkmark.circle.fill" : "square.and.arrow.up"
+                            )
+                            .font(.title2)
+                            .foregroundColor(.white)
+                            .frame(width: 60, height: 60)
+                            .background(isSelectionMode ? Color.blue : Color.green)
+                            .clipShape(Circle())
+                            .shadow(radius: 4)
                         }
                         .padding()
-                        
+
                         Spacer()
-                        
+
                         // LLM Chat 버튼
                         Button(action: {
                             showingChat = true
@@ -127,10 +164,17 @@ struct PlayListView: View {
             .navigationBarBackButtonHidden(true)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: {
-                        showingCreatePlayList = true
-                    }) {
-                        Image(systemName: "plus")
+                    if isSelectionMode {
+                        Button("취소") {
+                            isSelectionMode = false
+                            selectedPlaylists.removeAll()
+                        }
+                    } else {
+                        Button(action: {
+                            showingCreatePlayList = true
+                        }) {
+                            Image(systemName: "plus")
+                        }
                     }
                 }
             }
@@ -156,20 +200,112 @@ struct PlayListView: View {
                 }
                 .presentationDetents([.height(200)])
             }
-            .sheet(isPresented: $showingChat, onDismiss: {
-                viewModel.loadPlayLists()
-            }) {
+            .sheet(
+                isPresented: $showingChat,
+                onDismiss: {
+                    viewModel.loadPlayLists()
+                }
+            ) {
                 NavigationStack {
                     LLMChatView(viewModel: LLMChatViewModel(modelContext: modelContext))
                 }
             }
             .sheet(isPresented: $showingShare) {
-                // TODO: 공유 기능 구현
-                // ShareView()
-                Text("플레이리스트 공유")
+                if let playlist = selectedPlaylistForShare {
+                    ShareView(playlist: playlist)
+                }
             }
         }
     }
 }
 
+struct ShareView: View {
+    let playlist: PlayList
+    @Environment(\.dismiss) private var dismiss
 
+    var body: some View {
+        NavigationStack {
+            VStack(spacing: 20) {
+                Text("플레이리스트 공유")
+                    .font(.title2)
+                    .padding(.top)
+
+                Image(systemName: "music.note.list")
+                    .font(.system(size: 60))
+                    .foregroundColor(.blue)
+
+                Text(playlist.title)
+                    .font(.headline)
+
+                Text("\(playlist.songs.count)곡")
+                    .foregroundColor(.gray)
+
+                Button(action: {
+//                    shareToKakaoTalk()
+                }) {
+                    HStack {
+                        Image(systemName: "message.fill")
+                            .font(.title2)
+                            .foregroundColor(.black)
+                            .frame(width: 30, height: 30)
+                            .background(Color.yellow)
+                            .clipShape(Circle())
+                        Text("카카오톡으로 공유하기")
+                            .font(.headline)
+                    }
+                    .foregroundColor(.black)
+                    .padding()
+                    .frame(maxWidth: .infinity)
+                    .background(Color.yellow)
+                    .cornerRadius(10)
+                }
+                .padding(.horizontal)
+
+                Spacer()
+            }
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("닫기") {
+                        dismiss()
+                    }
+                }
+            }
+        }
+    }
+
+//    private func shareToKakaoTalk() {
+//        // 템플릿 메시지 생성
+//        let template = FeedTemplate(
+//            content: Content(
+//                title: playlist.title,
+//                description: "\(playlist.songs.count)곡이 포함된 플레이리스트",
+//                imageURL: URL(string: "https://example.com/playlist_image.jpg")!,  // 실제 이미지 URL로 변경 필요
+//                link: Link(
+//                    webURL: URL(string: "https://example.com/playlist/\(playlist.id)")!,  // 실제 웹 URL로 변경 필요
+//                    mobileWebURL: URL(string: "https://example.com/playlist/\(playlist.id)")!
+//                )
+//            )
+//        )
+//
+//        // 카카오톡 공유
+//        if ShareApi.isKakaoTalkSharingAvailable() {
+//            ShareApi.shared.shareDefault(templatable: template) { (sharingResult, error) in
+//                if let error = error {
+//                    print("카카오톡 공유 실패: \(error)")
+//                } else {
+//                    print("카카오톡 공유 성공")
+//                }
+//            }
+//        } else {
+//            // 카카오톡이 설치되어 있지 않은 경우 웹 공유
+//            ShareApi.shared.shareDefault(templatable: template) { (sharingResult, error) in
+//                if let error = error {
+//                    print("웹 공유 실패: \(error)")
+//                } else {
+//                    print("웹 공유 성공")
+//                }
+//            }
+//        }
+//    }
+}

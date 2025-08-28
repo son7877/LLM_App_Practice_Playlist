@@ -53,7 +53,7 @@ struct PlayListDetailView: View {
                 .onTapGesture {  // 노래 클릭 시 애플 뮤직 플레이어로 이동
                     if let musicKitID = song.musicKitID {
                         let musicURL = URL(
-                            string: "musicplayer://music.apple.com/song/\(musicKitID)")!
+                            string: "music://music.apple.com/song/\(musicKitID)")!
                         let webURL = URL(string: "https://music.apple.com/song/\(musicKitID)")!
 
                         if UIApplication.shared.canOpenURL(musicURL) {

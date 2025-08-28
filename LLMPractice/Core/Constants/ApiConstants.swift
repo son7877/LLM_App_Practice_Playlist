@@ -11,8 +11,12 @@ extension Bundle {
     var openAiAPIKey: String? {
         return infoDictionary?["OPEN_AI_API_KEY"] as? String
     }
-    
+
     var openAiURL: String? {
         return infoDictionary?["OPEN_AI_URL"] as? String
+    }
+
+    var kakaoAppKey: String? {
+        return infoDictionary?["KAKAO_APP_KEY"] as? String
     }
 }

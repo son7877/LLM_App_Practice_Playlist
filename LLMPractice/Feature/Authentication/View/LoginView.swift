@@ -5,14 +5,14 @@
 //  Created by 안홍범 on 2025/05/12.
 //
 
-import SwiftUI
 import SwiftData
+import SwiftUI
 
 struct LoginView: View {
     @StateObject private var viewModel = LoginViewModel()
     @FocusState private var isFocused: Bool
     @Environment(\.modelContext) private var modelContext
-    
+
     var body: some View {
         NavigationStack {
             VStack(spacing: 20) {
@@ -21,7 +21,7 @@ struct LoginView: View {
                     .font(.largeTitle)
                     .fontWeight(.bold)
                     .padding(.bottom, 50)
-                
+
                 // 이메일 입력 필드
                 TextField("이메일", text: $viewModel.email)
                     .textFieldStyle(RoundedBorderTextFieldStyle())
@@ -29,16 +29,16 @@ struct LoginView: View {
                     .keyboardType(.emailAddress)
                     .padding(.horizontal)
                     .focused($isFocused)
-                
+
                 // 비밀번호 입력 필드
                 SecureField("비밀번호", text: $viewModel.password)
                     .textFieldStyle(RoundedBorderTextFieldStyle())
                     .textContentType(.password)
                     .padding(.horizontal)
                     .focused($isFocused)
-                
+
                 // 로그인 버튼
-                Button(action: { 
+                Button(action: {
                     viewModel.handleLogin()
                 }) {
                     Text("로그인")
@@ -49,13 +49,13 @@ struct LoginView: View {
                         .cornerRadius(10)
                 }
                 .padding(.horizontal)
-                
+
                 // 회원가입 버튼
                 Button(action: { viewModel.isShowingSignUp = true }) {
                     Text("회원가입")
                         .foregroundColor(.blue)
                 }
-                
+
                 // 소셜 로그인 구분선
                 HStack {
                     Rectangle()
@@ -69,7 +69,7 @@ struct LoginView: View {
                         .foregroundColor(.gray.opacity(0.3))
                 }
                 .padding(.vertical)
-                
+
                 // 소셜 로그인 버튼들
                 HStack(spacing: 20) {
                     // 카카오 로그인
@@ -81,7 +81,7 @@ struct LoginView: View {
                             .background(Color.yellow)
                             .clipShape(Circle())
                     }
-                    
+
                     // 애플 로그인
                     Button(action: { viewModel.handleAppleLogin() }) {
                         Image(systemName: "apple.logo")
@@ -91,22 +91,22 @@ struct LoginView: View {
                             .background(Color.black)
                             .clipShape(Circle())
                     }
-                    
+
                     // 구글 로그인
-                    Button(action: { 
+                    Button(action: {
                         viewModel.handleGoogleLogin()
-                        }) {
+                    }) {
                         Image("GoogleLogin")
                             .resizable()
                             .frame(width: 50, height: 50)
                     }
                 }
-                
+
                 Spacer()
             }
             .padding()
             .ignoresSafeArea(.keyboard, edges: .bottom)
-            .background( // 키보드 외부 터치 시 키보드 내리기
+            .background(  // 키보드 외부 터치 시 키보드 내리기
                 Color.clear
                     .contentShape(Rectangle())
                     .onTapGesture {
@@ -127,6 +127,5 @@ struct LoginView: View {
                 PlayListView(modelContext: modelContext)
             }
         }
-    
     }
 }
