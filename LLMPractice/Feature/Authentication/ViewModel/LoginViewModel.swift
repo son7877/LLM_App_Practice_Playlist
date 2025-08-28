@@ -9,36 +9,10 @@ import SwiftUI
 
 @MainActor
 class LoginViewModel: ObservableObject {
-    @Published var email: String = ""
-    @Published var password: String = ""
     @Published var showAlert: Bool = false
     @Published var alertMessage: String = ""
-    @Published var isShowingSignUp: Bool = false
     @Published var isShowingPlayList: Bool = false
     @Published var isLoginSuccess: Bool = false
-    
-    func handleLogin() {
-        // 입력값 검증
-        guard !email.isEmpty else {
-            alertMessage = "이메일을 입력해주세요."
-            showAlert = true
-            return
-        }
-        
-        guard !password.isEmpty else {
-            alertMessage = "비밀번호를 입력해주세요."
-            showAlert = true
-            return
-        }
-        
-        // TODO: 실제 로그인 로직 구현
-        // 여기에 API 호출 등의 로그인 처리 로직을 추가
-        
-        // 임시 로그인 성공 처리
-        isLoginSuccess = true
-        alertMessage = "로그인 성공"
-        showAlert = true
-    }
     
     func handleAlertDismiss() {
         if isLoginSuccess {
@@ -59,9 +33,5 @@ class LoginViewModel: ObservableObject {
         showAlert = true
     }
     
-    func handleGoogleLogin() {
-        // TODO: 구글 로그인 구현
-        alertMessage = "구글 로그인 준비 중입니다."
-        showAlert = true
-    }
+    // 이메일/비밀번호 및 구글 로그인 제거
 } 

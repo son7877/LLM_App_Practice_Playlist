@@ -10,118 +10,60 @@ import SwiftUI
 
 struct LoginView: View {
     @StateObject private var viewModel = LoginViewModel()
-    @FocusState private var isFocused: Bool
     @Environment(\.modelContext) private var modelContext
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 20) {
-                // 로고 또는 앱 이름
+            VStack(spacing: 24) {
                 Text("LLMPlayList")
                     .font(.largeTitle)
                     .fontWeight(.bold)
-                    .padding(.bottom, 50)
+                    .padding(.top, 40)
 
-                // 이메일 입력 필드
-                TextField("이메일", text: $viewModel.email)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .textContentType(.emailAddress)
-                    .keyboardType(.emailAddress)
-                    .padding(.horizontal)
-                    .focused($isFocused)
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("간편 로그인")
+                        .font(.headline)
+                        .foregroundColor(.secondary)
 
-                // 비밀번호 입력 필드
-                SecureField("비밀번호", text: $viewModel.password)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .textContentType(.password)
-                    .padding(.horizontal)
-                    .focused($isFocused)
-
-                // 로그인 버튼
-                Button(action: {
-                    viewModel.handleLogin()
-                }) {
-                    Text("로그인")
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.blue)
-                        .cornerRadius(10)
-                }
-                .padding(.horizontal)
-
-                // 회원가입 버튼
-                Button(action: { viewModel.isShowingSignUp = true }) {
-                    Text("회원가입")
-                        .foregroundColor(.blue)
-                }
-
-                // 소셜 로그인 구분선
-                HStack {
-                    Rectangle()
-                        .frame(height: 1)
-                        .foregroundColor(.gray.opacity(0.3))
-                    Text("또는")
-                        .foregroundColor(.gray)
-                        .font(.footnote)
-                    Rectangle()
-                        .frame(height: 1)
-                        .foregroundColor(.gray.opacity(0.3))
-                }
-                .padding(.vertical)
-
-                // 소셜 로그인 버튼들
-                HStack(spacing: 20) {
-                    // 카카오 로그인
-                    Button(action: { viewModel.handleKakaoLogin() }) {
-                        Image(systemName: "message.fill")
-                            .font(.title2)
-                            .foregroundColor(.black)
-                            .frame(width: 50, height: 50)
+                    VStack(spacing: 14) {
+                        Button(action: { viewModel.handleKakaoLogin() }) {
+                            HStack {
+                                Image(systemName: "message.fill")
+                                    .foregroundColor(.black)
+                                Text("카카오로 계속하기")
+                                    .fontWeight(.semibold)
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding()
                             .background(Color.yellow)
-                            .clipShape(Circle())
-                    }
+                            .cornerRadius(12)
+                        }
 
-                    // 애플 로그인
-                    Button(action: { viewModel.handleAppleLogin() }) {
-                        Image(systemName: "apple.logo")
-                            .font(.title2)
-                            .foregroundColor(.white)
-                            .frame(width: 50, height: 50)
+                        Button(action: { viewModel.handleAppleLogin() }) {
+                            HStack {
+                                Image(systemName: "apple.logo")
+                                    .foregroundColor(.white)
+                                Text("Apple로 계속하기")
+                                    .fontWeight(.semibold)
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding()
                             .background(Color.black)
-                            .clipShape(Circle())
-                    }
-
-                    // 구글 로그인
-                    Button(action: {
-                        viewModel.handleGoogleLogin()
-                    }) {
-                        Image("GoogleLogin")
-                            .resizable()
-                            .frame(width: 50, height: 50)
+                            .foregroundColor(.white)
+                            .cornerRadius(12)
+                        }
                     }
                 }
 
                 Spacer()
             }
             .padding()
-            .ignoresSafeArea(.keyboard, edges: .bottom)
-            .background(  // 키보드 외부 터치 시 키보드 내리기
-                Color.clear
-                    .contentShape(Rectangle())
-                    .onTapGesture {
-                        self.endTextEditing()
-                    }
-            )
             .alert("알림", isPresented: $viewModel.showAlert) {
                 Button("확인", role: .cancel) {
                     viewModel.handleAlertDismiss()
                 }
             } message: {
                 Text(viewModel.alertMessage)
-            }
-            .sheet(isPresented: $viewModel.isShowingSignUp) {
-                SignUpView()
             }
             .navigationDestination(isPresented: $viewModel.isShowingPlayList) {
                 PlayListView(modelContext: modelContext)
