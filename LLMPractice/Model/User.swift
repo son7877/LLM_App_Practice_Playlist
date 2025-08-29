@@ -9,7 +9,7 @@ import Foundation
 import SwiftData
 
 @Model
-final class User {
+final class AppleUser {
     private(set) var id: UUID = UUID()
     var email: String
     var password: String
@@ -26,6 +26,21 @@ final class User {
         self.password = password
         self.createdAt = createdAt
         self.updatedAt = updatedAt
+    }
+}
+
+@Model
+final class KakaoUser {
+    private(set) var id: UUID = UUID()
+    var profile_nickname: String
+    var account_email: String
+
+    init(
+        profile_nickname: String,
+        account_email: String
+    ) {
+        self.profile_nickname = profile_nickname
+        self.account_email = account_email
     }
 }
 

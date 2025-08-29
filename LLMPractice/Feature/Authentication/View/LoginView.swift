@@ -19,19 +19,18 @@ struct LoginView: View {
                     .font(.largeTitle)
                     .fontWeight(.bold)
                     .padding(.top, 40)
+                
+                Spacer()
 
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("간편 로그인")
-                        .font(.headline)
-                        .foregroundColor(.secondary)
-
                     VStack(spacing: 14) {
                         Button(action: { viewModel.handleKakaoLogin() }) {
                             HStack {
                                 Image(systemName: "message.fill")
                                     .foregroundColor(.black)
-                                Text("카카오로 계속하기")
+                                Text("카카오톡으로 계속하기")
                                     .fontWeight(.semibold)
+                                    .foregroundColor(.black)
                             }
                             .frame(maxWidth: .infinity)
                             .padding()
