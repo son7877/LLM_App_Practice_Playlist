@@ -14,6 +14,7 @@ class MusicKitManager {
     private init() {}
 
     // MARK: - 음악 검색
+    @MainActor
     func fetchMusic(_ txt: String) async throws -> [Song] {
         let status = await MusicAuthorization.request()  // 음악 권한 요청
 

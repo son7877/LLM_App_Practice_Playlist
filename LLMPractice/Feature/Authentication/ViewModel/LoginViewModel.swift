@@ -14,6 +14,7 @@ import UIKit
 import KakaoSDKUser
 import KakaoSDKAuth
 #endif
+import SwiftData
 
 @MainActor
 class LoginViewModel: NSObject, ObservableObject { 
@@ -68,8 +69,9 @@ class LoginViewModel: NSObject, ObservableObject {
                 return
             }
 
-            let nickname = user?.kakaoAccount?.profile?.nickname ?? ""
+            _ = user?.kakaoAccount?.profile?.nickname // 닉네임은 현재 미사용
             let email = user?.kakaoAccount?.email
+            let kakaoUserId = (user?.id).map { String($0) } ?? ""
 
             if email == nil {
                 self.requestAdditionalAgreement(scopes: ["account_email"]) { [weak self] in
@@ -78,8 +80,14 @@ class LoginViewModel: NSObject, ObservableObject {
                 return
             }
 
+            // 사용자 ID/이메일 설정 (카카오: id, account_email)
+            if !kakaoUserId.isEmpty {
+                UserDataManager.shared.setCurrentUserId(kakaoUserId)
+            }
+            UserDataManager.shared.setCurrentUserEmail(email!)
+            
             self.isLoginSuccess = true
-            self.alertMessage = "카카오 로그인에 성공했습니다! 닉네임: \(nickname), 이메일: \(email ?? "-")"
+            self.alertMessage = "카카오 로그인에 성공했습니다!)"
             self.showAlert = true
         }
         #endif
@@ -128,6 +136,7 @@ extension LoginViewModel: ASAuthorizationControllerDelegate {
         // 1. 고유 사용자 식별자 (서버에 저장할 값)
         let userIdentifier = appleIDCredential.user
         print("Apple User Identifier: \(userIdentifier)")
+        UserDataManager.shared.setCurrentUserId(userIdentifier)
 
         // 2. Identity Token (서버로 보내 유효성 검증에 사용할 값)
         guard let identityToken = appleIDCredential.identityToken,
@@ -146,10 +155,18 @@ extension LoginViewModel: ASAuthorizationControllerDelegate {
         }
         if let email = appleIDCredential.email {
             print("User Email: \(email)")
+        } else if let persisted = UserDataManager.shared.getPersistedUserEmail() {
+            // 재인증 등으로 이메일이 내려오지 않는 경우, 이전에 저장한 이메일을 복구해 사용
+            UserDataManager.shared.setCurrentUserEmail(persisted)
         }
 
         // TODO: 여기서 userIdentifier와 tokenString을 백엔드 서버로 전송해야 합니다.
         // 서버 통신이 성공했다고 가정하고 다음 화면으로 넘어갑니다.
+        
+        // 사용자 이메일 설정 (애플: email). 최초 로그인 때만 제공되므로, 없으면 기존 저장값 사용
+        if let email = appleIDCredential.email {
+            UserDataManager.shared.setCurrentUserEmail(email)
+        }
 
         isLoginSuccess = true
         alertMessage = "Apple 로그인에 성공했습니다!"

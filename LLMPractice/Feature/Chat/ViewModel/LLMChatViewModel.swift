@@ -15,11 +15,25 @@ final class LLMChatViewModel: ObservableObject {
     @Published var isLoading = false
     @Published var recommendedSongs: [Song] = []
     @Published var errorMessage: ErrorMessage? = nil
+    @Published var chatMessages: [RequestMessage] = []
     
     private let modelContext: ModelContext
     
     init(modelContext: ModelContext) {
         self.modelContext = modelContext
+        loadChatMessages()
+    }
+    
+    // MARK: - 채팅 메시지 로드
+    func loadChatMessages() {
+        Task {
+            do {
+                chatMessages = try UserDataManager.shared.fetchUserChatMessages(context: modelContext)
+            } catch {
+                errorMessage = ErrorMessage("채팅 메시지 로드 실패: \(error.localizedDescription)")
+                Logger.shared.log("채팅 메시지 로드 실패: \(error.localizedDescription)")
+            }
+        }
     }
     
     // MARK: - 메시지 전송
@@ -36,19 +50,18 @@ final class LLMChatViewModel: ObservableObject {
             response = "OpenAI 호출 실패: \(error.localizedDescription)"
         }
 
-        // 이후 기존 로직대로 메시지 저장 및 추천 곡 검색
-        let requestMessage = RequestMessage(content: text)
-        modelContext.insert(requestMessage)
-        let responseMessage = ResponseMessage(content: response, request: requestMessage)
-        requestMessage.response = responseMessage
-        modelContext.insert(responseMessage)
-        do { 
-            try modelContext.save() 
+        // UserDataManager를 사용하여 사용자별 메시지 저장
+        do {
+            let requestMessage = try UserDataManager.shared.createChatMessage(content: text, context: modelContext)
+            _ = try UserDataManager.shared.createResponseMessage(content: response, request: requestMessage, context: modelContext)
+            
+            // 채팅 메시지 목록 새로고침
+            loadChatMessages()
         } catch {
-            // errorMessage가 nil일 때만 할당하여 Alert가 여러 번 뜨지 않도록 함
             if errorMessage == nil {
                 errorMessage = ErrorMessage("데이터 저장 중 에러 발생: \(error.localizedDescription)")
             }
+            Logger.shared.log("채팅 메시지 저장 실패: \(error.localizedDescription)")
         }
 
         // 음악 관련 질문인 경우에만 추천 곡 검색

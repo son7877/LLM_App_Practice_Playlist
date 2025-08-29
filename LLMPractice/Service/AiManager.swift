@@ -116,7 +116,7 @@ final class AiManager {
     }
     
     private func fetchPreviousMessages(limit: Int) async throws -> [RequestMessage] {
-        guard let modelContext = AiManager.modelContext else { return [] }
+        guard AiManager.modelContext != nil else { return [] }
         // 최근 3개 대화만 조회
         // 임시로 빈 배열 반환
         // 추후 데이터베이스 조회 로직 추가 -> 최근 메시지 limit 개수만큼 조회

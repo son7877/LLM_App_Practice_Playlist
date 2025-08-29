@@ -12,6 +12,7 @@ import SwiftData
 import SwiftUI
 
 struct PlayListView: View {
+    @Environment(\.dismiss) private var dismiss
     private let modelContext: ModelContext
     @StateObject private var viewModel: PlayListViewModel
     @State private var showingCreatePlayList = false
@@ -163,6 +164,15 @@ struct PlayListView: View {
             .navigationTitle("나의 플레이리스트")
             .navigationBarBackButtonHidden(true)
             .toolbar {
+                // 로그아웃 버튼
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button(action: {
+                        dismiss()
+                    }) {
+                        Image(systemName: "xmark")
+                    }
+                }
+                
                 ToolbarItem(placement: .navigationBarTrailing) {
                     if isSelectionMode {
                         Button("취소") {
