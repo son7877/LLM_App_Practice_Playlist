@@ -8,24 +8,46 @@
 import Foundation
 import SwiftData
 
+// 공통 사용자 프로토콜
+protocol UserProtocol {
+    var userEmail: String { get }
+}
+
 @Model
-final class User {
+final class AppleUser: UserProtocol {
     private(set) var id: UUID = UUID()
     var email: String
     var password: String
-    var createdAt: Date
-    var updatedAt: Date
+
+    var userEmail: String {
+        return email
+    }
 
     init(
         email: String,
         password: String,
-        createdAt: Date = Date(),
-        updatedAt: Date = Date()
     ) {
         self.email = email
         self.password = password
-        self.createdAt = createdAt
-        self.updatedAt = updatedAt
+    }
+}
+
+@Model
+final class KakaoUser: UserProtocol {
+    private(set) var id: UUID = UUID()
+    var profile_nickname: String
+    var account_email: String
+
+    var userEmail: String {
+        return account_email
+    }
+
+    init(
+        profile_nickname: String,
+        account_email: String
+    ) {
+        self.profile_nickname = profile_nickname
+        self.account_email = account_email
     }
 }
 

@@ -8,6 +8,7 @@
 import SwiftUI
 
 extension View {
+    // 키보드 내리기
     func endTextEditing() {
         UIApplication.shared.sendAction(
             #selector(UIResponder.resignFirstResponder),

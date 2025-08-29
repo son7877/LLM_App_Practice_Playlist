@@ -50,6 +50,19 @@ struct PlayListDetailView: View {
                         .foregroundColor(.gray)
                 }
                 .padding(.vertical, 4)
+                .onTapGesture {  // 노래 클릭 시 애플 뮤직 플레이어로 이동
+                    if let musicKitID = song.musicKitID {
+                        let musicURL = URL(
+                            string: "music://music.apple.com/song/\(musicKitID)")!
+                        let webURL = URL(string: "https://music.apple.com/song/\(musicKitID)")!
+
+                        if UIApplication.shared.canOpenURL(musicURL) {
+                            UIApplication.shared.open(musicURL)
+                        } else {
+                            UIApplication.shared.open(webURL)
+                        }
+                    }
+                }
             }
         }
         .navigationTitle(playlist.title)

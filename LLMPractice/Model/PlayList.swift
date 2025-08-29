@@ -17,6 +17,8 @@ final class PlayList: Identifiable {
     var updatedAt: Date
     var isPublic: Bool
     var isDeleted: Bool
+    var userId: String = "" // 안정적 식별자 (Apple userIdentifier / Kakao user.id)
+    var userEmail: String // 사용자 이메일 (Apple: email, Kakao: account_email)
 
     init(
         title: String,
@@ -24,7 +26,9 @@ final class PlayList: Identifiable {
         createdAt: Date = Date(), 
         updatedAt: Date = Date(), 
         isPublic: Bool = true, 
-        isDeleted: Bool = false
+        isDeleted: Bool = false,
+        userId: String,
+        userEmail: String
     ) {
         self.title = title
         self.songs = songs
@@ -32,5 +36,7 @@ final class PlayList: Identifiable {
         self.updatedAt = updatedAt
         self.isPublic = isPublic
         self.isDeleted = isDeleted
+        self.userId = userId
+        self.userEmail = userEmail
     }
 }

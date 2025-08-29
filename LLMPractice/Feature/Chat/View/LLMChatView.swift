@@ -169,12 +169,18 @@ struct TrackRow: View {
                     },
                     trailing: Button("만들기") {
                         if !newPlayListTitle.isEmpty {
-                            let newPlayList = PlayList(title: newPlayListTitle)
-                            newPlayList.songs.append(song)
-                            modelContext.insert(newPlayList)
-                            try? modelContext.save()
-                            newPlayListTitle = ""
-                            showingCreatePlayList = false
+                            if let email = UserDataManager.shared.getCurrentUserEmail(),
+                               let userId = UserDataManager.shared.getCurrentUserId() {
+                                let newPlayList = PlayList(title: newPlayListTitle, userId: userId, userEmail: email)
+                                newPlayList.songs.append(song)
+                                modelContext.insert(newPlayList)
+                                try? modelContext.save()
+                                newPlayListTitle = ""
+                                showingCreatePlayList = false
+                            } else {
+                                // 사용자 정보가 없으면 생성 불가
+                                showingCreatePlayList = false
+                            }
                         }
                     }
                 )
